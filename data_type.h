@@ -2,6 +2,8 @@
 #define DATA_TYPE_H
 
 #include <iostream>
+#include <ctime>
+#include <chrono>
 
 //======================================================================
 //  DataQueueType class
@@ -37,9 +39,19 @@ class DataQueueType
         //======================================================================
         bool operator<(DataQueueType p2) const;
 
+        //======================================================================
+        //  DataQueueType : operator<<
+        //
+        ///  overload, << operator to be able to cout data and priority
+        //
+        /// @param[in] p2
+        ///     DataQueueType datato compare
+        //======================================================================
+        friend std::ostream& operator<<(std::ostream& os, const DataQueueType& dt);
+
         //to use in private in futur
         unsigned int m_priority;
         std::string m_data;
+        std::chrono::_V2::system_clock::time_point m_insertTime;
 };
-
 #endif // DATA_TYPE_H

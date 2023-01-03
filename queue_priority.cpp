@@ -1,4 +1,6 @@
 #include "queue_priority.h"
+#include <algorithm>
+#include <vector>
 
 QueuePriority::QueuePriority(unsigned int max_size) // do not go over UINT32_MAX
 {
@@ -7,16 +9,27 @@ QueuePriority::QueuePriority(unsigned int max_size) // do not go over UINT32_MAX
 }
 
 void QueuePriority::insertData(DataQueueType value)
-{
-    //overload << operator
-    //std::cout<<value<<std::endl;
+{ 
+    value.m_insertTime = std::chrono::system_clock::now();
+
     if (static_cast<unsigned int>(this->size()) == m_queue_max_size) {
         eraseLast();
     }
+    std::cout << "Insert" << value << std::endl;
     this->push(value);
 }
 
 void QueuePriority::eraseLast()
 {
-    this->c.erase(this->c.end()-1);
+    auto lastQueue = std::min_element(this->c.begin(),this->c.end());
+    std::cout << "Erase" << *lastQueue << std::endl;
+    this->c.erase(lastQueue);
+}
+
+void QueuePriority::debugQueue()
+{
+    for( auto debug : this->c)
+    {
+        std::cout << debug << std::endl;
+    }
 }
