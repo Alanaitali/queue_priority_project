@@ -14,7 +14,9 @@ bin_PROGRAMS = \
 #========================================================================
 
 queue_priority_SOURCES = \
-	main.cpp
+	main.cpp \
+	data_type.cpp \
+	queue_priority.cpp
 
 #========================================================================
 # C preprocessor options for compiling queue_priority
