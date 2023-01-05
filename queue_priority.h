@@ -5,9 +5,10 @@
 #include <queue>
 #include <algorithm>
 #include <vector>
+#include <mutex>
 
 template <typename T>
-class QueuePriority : public std::priority_queue<T, std::vector<T>>
+class QueuePriority : private std::priority_queue<T, std::vector<T>>
 {
     public:
 
@@ -35,13 +36,33 @@ class QueuePriority : public std::priority_queue<T, std::vector<T>>
         //======================================================================
         void insertData(T value)
         {
+            std::lock_guard<std::mutex> lock(mutex_);
             value.m_insertTime = std::chrono::system_clock::now();
 
-            if (static_cast<unsigned int>(this->size()) == m_queue_max_size) {
+            if (static_cast<unsigned int>(this->std::priority_queue<T, std::vector<T>>::size()) == m_queue_max_size) {
                 eraseLast();
             }
             std::cout << "Insert" << value << std::endl;
             this->push(value);
+        }
+
+        size_t size() const
+        { 
+            std::lock_guard<std::mutex> lock(mutex_);
+            return this->std::priority_queue<T, std::vector<T>>::size();
+            
+        }
+
+        T top() const
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            return this->std::priority_queue<T, std::vector<T>>::top();
+        }
+
+        void pop()
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            return this->std::priority_queue<T, std::vector<T>>::pop();
         }
 
         //======================================================================
@@ -51,6 +72,7 @@ class QueuePriority : public std::priority_queue<T, std::vector<T>>
         //======================================================================
         void debugQueue()
         {
+            std::lock_guard<std::mutex> lock(mutex_);
             for( auto debug : this->c)
             {
                 std::cout << debug << std::endl;
@@ -71,6 +93,7 @@ class QueuePriority : public std::priority_queue<T, std::vector<T>>
             this->c.erase(lastQueue);
         }
 
+        mutable std::mutex mutex_;
         unsigned int m_queue_max_size;
 };
 
