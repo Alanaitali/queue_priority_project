@@ -3,14 +3,12 @@
 
 #include "data_type.h"
 #include <queue>
+#include <algorithm>
+#include <vector>
+#include <mutex>
 
-//======================================================================
-//  QueuePriority class
-//
-/// inherit from priority_queue to insert DataQueueType element
-//======================================================================
-
-class QueuePriority : public std::priority_queue<DataQueueType, std::vector<DataQueueType>>
+template <typename T>
+class QueuePriority : private std::priority_queue<T, std::vector<T>>
 {
     public:
 
@@ -22,7 +20,11 @@ class QueuePriority : public std::priority_queue<DataQueueType, std::vector<Data
         /// @param[in] max_size
         ///      max data queue 
         //======================================================================
-        QueuePriority(unsigned int max_size);
+        QueuePriority(unsigned int max_size) // do not go over UINT32_MAX
+        {
+            //init queue size value
+            m_queue_max_size = max_size;
+        }
 
         //======================================================================
         //  QueuePriority : insertData
@@ -32,19 +34,66 @@ class QueuePriority : public std::priority_queue<DataQueueType, std::vector<Data
         /// @param[in] value
         ///      data to insert
         //======================================================================
-        void insertData(DataQueueType value);
+        void insertData(T value)
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            value.m_insertTime = std::chrono::system_clock::now();
 
-        void debugQueue();
+            if (static_cast<unsigned int>(this->std::priority_queue<T, std::vector<T>>::size()) == m_queue_max_size) {
+                eraseLast();
+            }
+            std::cout << "Insert" << value << std::endl;
+            this->push(value);
+        }
+
+        size_t size() const
+        { 
+            std::lock_guard<std::mutex> lock(mutex_);
+            return this->std::priority_queue<T, std::vector<T>>::size();
+            
+        }
+
+        T top() const
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            return this->std::priority_queue<T, std::vector<T>>::top();
+        }
+
+        void pop()
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            return this->std::priority_queue<T, std::vector<T>>::pop();
+        }
+
+        //======================================================================
+        //  QueuePriority : debugQueue
+        //
+        ///  debug the conatiner 
+        //======================================================================
+        void debugQueue()
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            for( auto debug : this->c)
+            {
+                std::cout << debug << std::endl;
+            }
+        }
 
     private:
-        
+
         //======================================================================
         //  QueuePriority : eraseLast
         //
         ///  erase last queue value
         //======================================================================
-        void eraseLast();
+        void eraseLast()
+        {
+            auto lastQueue = std::min_element(this->c.begin(),this->c.end());
+            std::cout << "Erase" << *lastQueue << std::endl;
+            this->c.erase(lastQueue);
+        }
 
+        mutable std::mutex mutex_;
         unsigned int m_queue_max_size;
 };
 

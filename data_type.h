@@ -10,7 +10,7 @@
 //
 /// element to add in priority queue
 //======================================================================
-
+template<typename T>
 class DataQueueType
 {
     public:
@@ -21,12 +21,16 @@ class DataQueueType
         ///  constructor, store data and priority in private member var
         //
         /// @param[in] data
-        ///      string for symbolise data in queue
+        ///      symbolise data in queue
         //
         /// @param[in] priority
         ///     priority number in queue
         //======================================================================
-        DataQueueType(std::string data, unsigned int priority);
+        DataQueueType(const T& data, unsigned int priority)
+        {
+            m_data = data;
+            m_priority = priority;
+        }
         
         //======================================================================
         //  DataQueueType : operator<
@@ -37,7 +41,19 @@ class DataQueueType
         /// @param[in] p2
         ///     DataQueueType datato compare
         //======================================================================
-        bool operator<(DataQueueType p2) const;
+        bool operator<(DataQueueType p2) const
+        {
+            if(this->m_priority == p2.m_priority)
+            {
+                if(std::chrono::duration_cast<std::chrono::microseconds>(this->m_insertTime - p2.m_insertTime).count() < 0) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }
+            return this->m_priority < p2.m_priority;
+        }
 
         //======================================================================
         //  DataQueueType : operator<<
@@ -47,11 +63,14 @@ class DataQueueType
         /// @param[in] p2
         ///     DataQueueType datato compare
         //======================================================================
-        friend std::ostream& operator<<(std::ostream& os, const DataQueueType& dt);
+        friend std::ostream& operator<<(std::ostream& os, const DataQueueType& dt)
+        {
+            os << " data : " << dt.m_data << " priority : " << dt.m_priority;
+            return os;
+        }
 
-        //to use in private in futur
         unsigned int m_priority;
-        std::string m_data;
+        T m_data;
         std::chrono::_V2::system_clock::time_point m_insertTime;
 };
 #endif // DATA_TYPE_H
